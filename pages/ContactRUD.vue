@@ -1,6 +1,5 @@
 
 <template>
-
   <div>
     <DataTable :value="contacts">
       <Column field="id" header="ID"></Column>
@@ -10,20 +9,29 @@
       <Column field="message" header="Message"></Column>
       <Column header="Action">
         <template #body="slotProps">
-          <Button>Edit</Button>
-          <Button>Delete</Button>
+          <Button class="mr-2">Edit</Button>
+          <Button @click="deleteContact(slotProps.data.id)">Delete</Button>
         </template>
       </Column>
     </DataTable>
-
-
   </div>
 </template>
-
 
 <script setup lang="ts">
 const contacts = ref<Contact[]>([]);
 const error = ref<string | null>(null);
+
+const deleteContact = async (id) => {
+  try {
+    await $fetch(`/api/contacts/${id}`, {
+      method: "DELETE",
+    });
+    contacts.value = contacts.value.filter(contact => contact.id !== id);
+  } catch (err) {
+    error.value = 'Failed to delete contact.';
+    console.error(err);
+  }
+};
 
 onMounted(async () => {
   try {
@@ -34,7 +42,7 @@ onMounted(async () => {
     console.log(contacts.value);
   } catch (err) {
     error.value = 'Failed to load contacts.';
-    console.error(err); // Log the error for debugging
+    console.error(err);
   }
 });
 
